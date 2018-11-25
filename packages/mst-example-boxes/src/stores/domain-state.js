@@ -8,7 +8,10 @@ export const Box = types
         id: types.identifier,
         name: "hal",
         x: 0,
-        y: 0
+        y: 0,
+        height: 0,
+        dragging: false,
+        resizing: false
     })
     .views(self => ({
         get width() {
@@ -17,15 +20,33 @@ export const Box = types
         get isSelected() {
             if (!hasParent(self)) return false
             return getParent(self, 2).selection === self
+        },
+        get isHovered() {
+            if (!hasParent(self)) return false
+            return getParent(self, 2).hovered === self
+        },
+        get handlers() {
+            return [{ x: self.width / 2, y: 20 }]
         }
     }))
     .actions(self => ({
         move(dx, dy) {
-            self.x += dx
-            self.y += dy
+            if (!self.resizing) {
+                self.x += dx
+                self.y += dy
+            }
+        },
+        resize(dx, dy) {
+            self.height += dy
         },
         setName(newName) {
             self.name = newName
+        },
+        setDragging() {
+            self.dragging = !self.dragging
+        },
+        setResizing(isResizing) {
+            self.resizing = isResizing
         }
     }))
 
@@ -39,7 +60,8 @@ export const Store = types
     .model("Store", {
         boxes: types.map(Box),
         arrows: types.array(Arrow),
-        selection: types.maybeNull(types.reference(Box))
+        selection: types.maybeNull(types.reference(Box)),
+        hovered: types.maybeNull(types.reference(Box))
     })
     .actions(self => ({
         addBox(name, x, y) {
@@ -52,6 +74,14 @@ export const Store = types
         },
         setSelection(selection) {
             self.selection = selection
+        },
+
+        setHovered(hovered) {
+            if (self.hovered) {
+                self.hovered = null
+            } else {
+                self.hovered = hovered
+            }
         },
         createBox(name, x, y, source) {
             const box = self.addBox(name, x, y)
@@ -76,6 +106,12 @@ const store = Store.create({
             name: "Bratislava",
             x: 650,
             y: 300
+        },
+        "14194d76-aa31-45c5-a00c-104cc550430e": {
+            id: "14194d76-aa31-45c5-a00c-104cc550430e",
+            name: "Bratislava2",
+            x: 652,
+            y: 350
         }
     },
     arrows: [
