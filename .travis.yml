@@ -5,7 +5,7 @@ script:
     - yarn install
     - cd packages/mst-example-bookshop
     - yarn install
-    - $(npm bin)/cypress run --record
+    - npm run cy:ci
 
 node_js:
     - "node"
